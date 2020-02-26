@@ -45,7 +45,7 @@ int main(int argc, char *argv[]){
 			site = fopen(".temp.html", "r+");
 			if(site==NULL){
 				fprintf(stderr, "arquivo vazio!");
-				exit(1);
+				continue;
 			}
 			filtrar_urls(site, urls);
 			fclose(site);
@@ -55,7 +55,7 @@ int main(int argc, char *argv[]){
  			for( total=0; strlen(urls[total]); total++ );
  			printf("[\e[32mINFO\e[0m] Links encontrados: %d\n\e[0m", total);
 
- 			for( int cont=0; strlen( urls[cont] ) ; cont++ ){
+ 			for(int cont=0; strlen( urls[cont] ); cont++){
  				if( registro(urls[cont]) ){
  					if( site_online(urls[cont]) ) //verificar se está oline
  						salvar_link( urls[cont] , "(on)" );//salvar em lista.txt
@@ -65,10 +65,10 @@ int main(int argc, char *argv[]){
 
  				printf("[\e[32mINFO\e[0m] %.3d/%.3d | %s\n", cont+1, total, urls[cont] );
 			}
-				/* Limpa o vertor de strings urls */
- 				for(int cont=0; cont<10000; cont++)
- 					urls[cont][0]='\0';
- 			strcpy(argv[1], "\0");
+
+			/* Limpa urls */
+			memset(&urls, 0, sizeof(char)*10000*63);
+			puts("ESTOU AQUI!");
  		}
  		//se o link da retro alimentação estiver (off)
  		if( strstr(linha_ant_lista, "(off)")!=NULL ){
@@ -79,17 +79,22 @@ int main(int argc, char *argv[]){
  			if( strlen(linha_lista)==23 && strstr(linha_lista, ".onion")!=NULL ){
  				rm_nova_linha(linha_lista);
  				printf("[\e[32mINFO\e[0m] Entramos em \e[33mretroalimentação\e[0m! ~> %s\n", linha_lista);
-
  				
- 				torsocks(linha_lista, ".temp.html");
- 				site = fopen(".temp.html", "r+");
+ 				if( torsocks(linha_lista, ".temp.html")!=0 )
+ 					continue;
+
+ 				site=fopen(".temp.html", "r+");
+ 				if(site==NULL){
+					fprintf(stderr, "arquivo vazio!");
+					exit(1);
+				}
  				filtrar_urls(site, urls); //		trás os links no vertor de strings url[][22]
  				fclose(site);
  				remove(".temp.html");
 
  				/* Conta quantos links foram encontrados */
  				for(cont_links=0; strlen(urls[cont_links]); cont_links++);
- 				printf("\e[32m[\e[32mINFO\e[0m] Links encontrados: %d\n \e[0m", cont_links);
+ 				printf("\e[32m[\e[32mINFO\e[0m] Links encontrados: %d\n\e[0m", cont_links);
 
  				for(int cont=0; strlen( urls[cont] ) ; cont++){
  					if( registro(urls[cont]) ){
@@ -102,9 +107,8 @@ int main(int argc, char *argv[]){
  					printf("[\e[32mINFO\e[0m] %.3d| %s\n", cont+1, urls[cont] );
 				}
 
-				// Limpa o vertor de strings urls
- 				for(int cont=0; cont<10000; cont++)
- 					urls[cont][0]='\0';
+				// Limpa urls
+				memset(&urls, 0, sizeof(char)*10000*63);
  			}else if( strcmp(linha_lista, "\0")==0 ){
  			}
  		}
@@ -115,7 +119,7 @@ int main(int argc, char *argv[]){
 
 	puts("\e[1;33mTarefa concluída!\e[0m");
 	system("notify-send -i terminal Crawler \"Tarefa concluída\".");
-	puts(" acenos! ");
+	puts("acenos!");
 
 	return 0;
 }

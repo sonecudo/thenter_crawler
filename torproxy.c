@@ -142,10 +142,17 @@ int torsocks(char *endereco, char *arq_saida){
 			return -1;
 		}
 		rlen=recv(sockfd, buf, 255, 0);
-
 		texto_pag=realloc(texto_pag, strlen(texto_pag)+1+rlen );
 		strcat(texto_pag, buf);
-	}while(strstr(buf, "\r\n0\r\n")==NULL && strstr(buf, "</html>")==NULL && strstr(buf, "</body>")==NULL);
+	}while( rlen>0 &&
+			strstr(buf, "\r\n0\r\n")==NULL &&
+			strstr(buf, "</html>")==NULL &&
+			strstr(buf, "</body>")==NULL
+			);
+	if( strlen(texto_pag)==0 ){
+		fprintf(stderr, "[\e[31mERRO\e[0m] Socket sem conteúdo!\n");
+		return -1;
+	}
 
 	//httprint(texto_pag);
 	printf("[\e[32mINFO\e[0m] Bytes recebidos: %ld\n", strlen(texto_pag));
