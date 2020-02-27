@@ -133,19 +133,29 @@ int torsocks(char *endereco, char *arq_saida){
 	//printf("enviados: %d bytes\n", rlen);
 	//printf("recebendo...\n");
 	memset(texto_pag, 0, 1);
+	int leitura=0;
 	do{
 		memset(buf, 0, 256);
-		if( con_timeout(sockfd, 10)==0 ){
-			printf("[\e[33mINFO\e[0m] Conexão expirou\n");
-			free(buf);
-			free(texto_pag);
-			return -1;
+		if(leitura==0){
+			if( con_timeout(sockfd, 10)==0 ){
+				printf("[\e[33mINFO\e[0m] Conexão expirou\n");
+				free(buf);
+				free(texto_pag);
+				return -1;
+			}
+		}
+		if(leitura>0){ // timeout secundário (acenos mano caverno)
+			if( con_timeout(sockfd, 1)==0 ){
+				printf("[\e[33mINFO\e[0m] Conexão expirou(no fim)\n");
+				break;
+			}
 		}
 		rlen=recv(sockfd, buf, 255, 0);
 		texto_pag=realloc(texto_pag, strlen(texto_pag)+1+rlen );
 		strcat(texto_pag, buf);
+		leitura++;
 	}while( rlen>0 &&
-			strstr(buf, "\r\n0\r\n")==NULL &&
+			strstr(buf, "\r\n0\r\n\r\n")==NULL &&
 			strstr(buf, "</html>")==NULL &&
 			strstr(buf, "</body>")==NULL
 			);

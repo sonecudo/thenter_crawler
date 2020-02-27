@@ -50,28 +50,30 @@ int site_online(char *link){
 int pega_titulo(FILE *lista, char *link){
 	FILE *page;
 	char linha[200],titulo[50]="\0";
-	int l=0;
+	int l=0,res;
 
-	torsocks(link, ".titulo.html");
+	res=torsocks(link, ".titulo.html");
 
-	page = fopen(".titulo.html", "r");
-	while( fgets( linha, 200,page) ){
-		for(int i=0; linha[i]!='\0'; i++){
-			if( strstr(linha, "<title>")==linha+i-7 || strstr(linha, "<TITLE>")==linha+i-7 ){
-				for(int k=0; (linha[i+k]!='<' || linha[i+k+1]!='/') && k<50; k++){
-					// enquanto estiver antes do </...  title> e
-					if( (linha[i+k]>=32 && linha[i+k]<=126)	/*ASCII printável*/
-					 || strchr(CHAR_FILTER, linha[i+k])!=NULL/*CARACTERES PT*/ ){
-						titulo[l]=linha[i+k];
-						l++;
+	if(res==0){
+		page = fopen(".titulo.html", "r");
+		while( fgets( linha, 200,page) ){
+			for(int i=0; linha[i]!='\0'; i++){
+				if( strstr(linha, "<title>")==linha+i-7 || strstr(linha, "<TITLE>")==linha+i-7 ){
+					for(int k=0; (linha[i+k]!='<' || linha[i+k+1]!='/') && k<50; k++){
+						// enquanto estiver antes do </...  title> e
+						if( (linha[i+k]>=32 && linha[i+k]<=126)	/*ASCII printável*/
+						 || strchr(CHAR_FILTER, linha[i+k])!=NULL/*CARACTERES PT*/ ){
+							titulo[l]=linha[i+k];
+							l++;
+						}
 					}
+					titulo[l]='\0';
 				}
-				titulo[l]='\0';
 			}
 		}
+		fclose(page);
+		remove(".titulo.html");
 	}
-	fclose(page);
-	remove(".titulo.html");
 
 	if(titulo[0]=='\0'){
 		fputs("sem nome", lista);
@@ -85,19 +87,20 @@ int pega_titulo(FILE *lista, char *link){
 	return 0;
 }
 int registro( char *link ){
+	// confere se o site já está registrado
 	FILE *lista;
 	int flag=1;
 	char linha[100];
 
 	lista = fopen("lista.txt", "r");
 	while( fgets(linha, 100, lista) ){
-	// confere se o site já está registrado
-
 		rm_nova_linha(linha);
 
-		if( strcmp(link, linha)==0 ){ //se o link for encontrado no arquivo com a lista de links
+		if( strcmp(link, linha)==0 ){
+		//se o link for encontrado no arquivo com a lista de links
 			flag=0;
 			puts("[\e[32mINFO\e[0m] Site já registrado!");
+			break;
 		}
 	}
 	fclose(lista);

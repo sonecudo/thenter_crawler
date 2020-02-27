@@ -15,13 +15,13 @@ int main(int argc, char *argv[]){
  	char linha_lista[200]="\0", urls[10000][63], linha_ant_lista[200]="\0";
  	int total, cont_links, inicio=1;
 
- 	/* Gerencia argumentos de entrada */
+ 	/* Gestão de argumentos de entrada */
  	char link[300]="pzqcmpphmomfvih2.onion/thenter/onion.php";
 	if(argc == 2){
 		if( torsocks(argv[1], ".temp.html")!=0 )
 			inicio=0;
 	}else if(argc>2){
-		printf("\e[31m[!] Erro : Argumentos demais!\n \e[0m");
+		printf("[\e[31mERRO\e[0m] Erro : Argumentos demais!\n");
 		return -1;
 	}else
 		torsocks(link, ".temp.html");
@@ -29,7 +29,7 @@ int main(int argc, char *argv[]){
 	/* Abertura de arquivo */
  	lista = fopen("lista.txt", "a+");
  	if (lista==NULL){
-		printf("[!] Erro ao abrir a lista de links.");
+		printf("[\e[31mERRO\e[0m] Erro ao abrir a lista de links.");
 		return -1;
 	}
 
@@ -68,7 +68,6 @@ int main(int argc, char *argv[]){
 
 			/* Limpa urls */
 			memset(&urls, 0, sizeof(char)*10000*63);
-			puts("ESTOU AQUI!");
  		}
  		//se o link da retro alimentação estiver (off)
  		if( strstr(linha_ant_lista, "(off)")!=NULL ){
@@ -104,7 +103,7 @@ int main(int argc, char *argv[]){
  							salvar_link( urls[cont] , "(off)" );
  					}
 
- 					printf("[\e[32mINFO\e[0m] %.3d| %s\n", cont+1, urls[cont] );
+ 					printf("[\e[32mINFO\e[0m] %.3d|%.3d %s\n", cont+1, cont_links, urls[cont] );
 				}
 
 				// Limpa urls
@@ -117,9 +116,9 @@ int main(int argc, char *argv[]){
 
 	fclose(lista);
 
-	puts("\e[1;33mTarefa concluída!\e[0m");
+	puts("[\e[33mINFO\e[0m] Tarefa concluída!");
 	system("notify-send -i terminal Crawler \"Tarefa concluída\".");
-	puts("acenos!");
+	puts("\e[1;33m\tacenos!\e[0m");
 
 	return 0;
 }
