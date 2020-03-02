@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <ctype.h>
 
 #include "torproxy.c"
 #include "crawl.c"
@@ -33,7 +34,7 @@ int main(int argc, char *argv[]){
 		return -1;
 	}
 
-	/* Stalta links pré-existentes, para o final do arquivo */
+	/* Salta links da lista, vai para o final do arquivo */
 	while( fgets(linha_lista, 200, lista) );
 
 	/* Laço principal */
@@ -44,7 +45,7 @@ int main(int argc, char *argv[]){
 			/* Pega links e remove arquivo temporário */
 			site = fopen(".temp.html", "r+");
 			if(site==NULL){
-				fprintf(stderr, "arquivo vazio!");
+				fprintf(stderr, "[\e[31mERRO\e[0m] Arquivo vazio");
 				continue;
 			}
 			filtrar_urls(site, urls);
@@ -56,11 +57,11 @@ int main(int argc, char *argv[]){
  			printf("[\e[32mINFO\e[0m] Links encontrados: %d\n\e[0m", total);
 
  			for(int cont=0; strlen( urls[cont] ); cont++){
- 				if( registro(urls[cont]) ){
- 					if( site_online(urls[cont]) ) //verificar se está oline
- 						salvar_link( urls[cont] , "(on)" );//salvar em lista.txt
+ 				if( !registrado(urls[cont]) ){
+ 					if( torsocks(urls[cont], ".site.html")==0 )
+ 						salvar_link(urls[cont], "(on)");
  					else
- 						salvar_link( urls[cont] , "(off)" );
+ 						salvar_link(urls[cont], "(off)");
  				}
 
  				printf("[\e[32mINFO\e[0m] %.3d/%.3d | %s\n", cont+1, total, urls[cont] );
@@ -84,7 +85,7 @@ int main(int argc, char *argv[]){
 
  				site=fopen(".temp.html", "r+");
  				if(site==NULL){
-					fprintf(stderr, "arquivo vazio!");
+					fprintf(stderr, "[\e[31mERRO\e[0m] Arquivo vazio");
 					exit(1);
 				}
  				filtrar_urls(site, urls); //		trás os links no vertor de strings url[][22]
@@ -96,11 +97,11 @@ int main(int argc, char *argv[]){
  				printf("\e[32m[\e[32mINFO\e[0m] Links encontrados: %d\n\e[0m", cont_links);
 
  				for(int cont=0; strlen( urls[cont] ) ; cont++){
- 					if( registro(urls[cont]) ){
- 						if( site_online(urls[cont]) ) //verificar se está oline
- 							salvar_link( urls[cont] , "(on)" );//salvar em lista.txt
- 						else
- 							salvar_link( urls[cont] , "(off)" );
+ 					if( !registrado(urls[cont]) ){
+	 					if( torsocks(urls[cont], ".site.html")==0 )
+	 						salvar_link(urls[cont], "(on)");
+	 					else
+	 						salvar_link(urls[cont], "(off)");
  					}
 
  					printf("[\e[32mINFO\e[0m] %.3d|%.3d %s\n", cont+1, cont_links, urls[cont] );

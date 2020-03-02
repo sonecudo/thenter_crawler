@@ -1,9 +1,7 @@
 /*
  * Utilitarios para crawler
  */
-
 #define OCHARS "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ234567"
-#define CHAR_FILTER "áâãàçéêíóôõú\'\""
 
 void rm_nova_linha(char *entrada){
 	if( entrada[ strlen(entrada)-1 ]=='\n')
@@ -22,8 +20,7 @@ int onion_chars(char *m, int i, int type){
 		}
 	}
 	if(type==3){ //onion v3
-		for(cont=0; cont<56; cont++)
-		{
+		for(cont=0; cont<56; cont++){
 			if( index(OCHARS, m[i+cont])!=NULL ){
 			}else{
 				flag=0;
@@ -32,64 +29,45 @@ int onion_chars(char *m, int i, int type){
 	}
 	return flag;
 }
-int site_online(char *link){
-	//se o *link estiver online retorna 1 se estiver off retorna 0
-	int res;
-
-	printf("\n############################################\n");
-	res=torsocks(link, NULL);
-
-	if(res==0){
-		printf("[\e[32mINFO\e[0m]~> Site \e[32monline\e[0m(%d): http://%s\n", res, link);
-		return 1;
-	}else{
-		printf("[\e[32mINFO\e[0m]~> Site \e[33moffline\e[0m(%d): http://%s\e[0m\n", res, link);
-		return 0;
-	}
-}
-int pega_titulo(FILE *lista, char *link){
+char *pega_titulo(char *local_page){
 	FILE *page;
-	char linha[200],titulo[50]="\0";
-	int l=0,res;
+	int l=0;
+	char linha[200], *titulo;
+	titulo=malloc(sizeof(char)*50);
+	memset(titulo, 0, sizeof(char)*50);
 
-	res=torsocks(link, ".titulo.html");
-
-	if(res==0){
-		page = fopen(".titulo.html", "r");
-		while( fgets( linha, 200,page) ){
+	page=fopen(local_page, "r");
+	if(page==NULL){
+		fprintf(stderr, "[\e[31mERRO\e[0m] Arquivo vazio");
+		exit(1);
+	}else{
+		while(fgets(linha, 200,page) ){
 			for(int i=0; linha[i]!='\0'; i++){
 				if( strstr(linha, "<title>")==linha+i-7 || strstr(linha, "<TITLE>")==linha+i-7 ){
 					for(int k=0; (linha[i+k]!='<' || linha[i+k+1]!='/') && k<50; k++){
 						// enquanto estiver antes do </...  title> e
-						if( (linha[i+k]>=32 && linha[i+k]<=126)	/*ASCII printável*/
-						 || strchr(CHAR_FILTER, linha[i+k])!=NULL/*CARACTERES PT*/ ){
-							titulo[l]=linha[i+k];
+						if( isalnum(linha[i+k]) || isspace(linha[i+k]) ){
+							*(titulo+l)=linha[i+k];
 							l++;
 						}
 					}
-					titulo[l]='\0';
+					*(titulo+l)='\0';
 				}
 			}
 		}
 		fclose(page);
-		remove(".titulo.html");
 	}
 
-	if(titulo[0]=='\0'){
-		fputs("sem nome", lista);
-		fputc('\n', lista);
+	if( strlen(titulo)==0 )
 		strcpy(titulo, "sem nome");
-	}else{
-		fputs(titulo, lista);
-		fputc('\n', lista);
-	}
-	printf("\e[1;32m%s \e[0m\n", titulo);
-	return 0;
+
+	printf("[\e[32mINFO\e[0m] Título: \e[1;32m%s \e[0m\n", titulo);
+	return titulo;
 }
-int registro( char *link ){
+int registrado(char *link){
 	// confere se o site já está registrado
 	FILE *lista;
-	int flag=1;
+	int flag=0;
 	char linha[100];
 
 	lista = fopen("lista.txt", "r");
@@ -98,7 +76,7 @@ int registro( char *link ){
 
 		if( strcmp(link, linha)==0 ){
 		//se o link for encontrado no arquivo com a lista de links
-			flag=0;
+			flag=1;
 			puts("[\e[32mINFO\e[0m] Site já registrado!");
 			break;
 		}
@@ -114,9 +92,11 @@ int salvar_link(char *link, char *status){
 
 	fputs(status, lista);
 
-	if( strcmp(status, "(on)") == 0 )
-		pega_titulo(lista, link);
-	else
+	if( strcmp(status, "(on)") == 0 ){
+		fputs( pega_titulo(".site.html"), lista);
+		fputc('\n', lista);
+		remove(".site.html");
+	}else
 		putc('\n', lista);
 
 	fputs(link, lista);
