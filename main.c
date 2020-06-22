@@ -17,7 +17,7 @@ int main(int argc, char *argv[]){
  	int total, cont_links, inicio=1;
 
  	/* Gestão de argumentos de entrada */
- 	char link[300]="pzqcmpphmomfvih2.onion/thenter/onion.php";
+ 	char link[300]="n5dxszob62pha3q5yz3k5akya4stx5c2ydvwdp5smc7y7foq3ple5zyd.onion/thenter/onion.php";
 	if(argc == 2){
 		if( torsocks(argv[1], ".temp.html")!=0 )
 			inicio=0;

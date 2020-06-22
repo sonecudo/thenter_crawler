@@ -3,6 +3,16 @@
  */
 #define OCHARS "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ234567"
 
+int link_na_lista(int indice, char *link, char lista[10000][63]){
+	int flag=0;
+
+	for(int k=0; flag==0 && k<indice; k++){
+		if( strcmp(lista[k], link)==0 )
+			flag=1;
+	}
+
+	return flag;
+}
 void rm_nova_linha(char *entrada){
 	if( entrada[ strlen(entrada)-1 ]=='\n')
 		entrada[ strlen(entrada)-1 ]='\0';
@@ -106,28 +116,40 @@ int salvar_link(char *link, char *status){
 	return 0;
 }
 int filtrar_urls(FILE *site, char urls[][63]){
-	char linha[10000];
+	char linha[10000], link[63];
 	int k=0, a=0;
 	memset(linha, 0, sizeof(char)*10000);
 
 	while( fgets(linha, 10000, site) ){
 		for(int i=0; linha[i]!='\0' && linha[i+16]!='\0'; i++){
-			if( strstr(linha, ".onion")==linha+i+16 && onion_chars( linha, i, 2) ){
+
 			//onion v2
+			if( strstr(linha, ".onion")==linha+i+16 && onion_chars(linha, i, 2) ){
 				for(k=0; k<22; k++){
-					urls[a][k]=linha[i+k];
+					link[k]=linha[i+k];
 				}
-				urls[a][22]='\0';
-				a++;
-				// selecionar links desejáveis nessa parte
-			}else if( strstr(linha, ".onion")==linha+i+56 && onion_chars( linha, i, 3) ){
+				link[22]='\0';
+
+				// Evita links duplicados na buffer
+				if( !link_na_lista(a, link,urls) ){
+					strcpy(urls[a], link);
+					a++;
+				}
+			}
+
 			//onion v3
+			else if( strstr(linha, ".onion")==linha+i+56 && onion_chars(linha, i, 3) ){
+			
 				for(k=0; k<62; k++){
-					urls[a][k]=linha[i+k];
+					link[k]=linha[i+k];
 				}
-				urls[a][62]='\0';
-				a++;
-				// selecionar links desejáveis nessa parte
+				link[62]='\0';
+
+				// Evita links duplicados na buffer
+				if( !link_na_lista(a, link,urls) ){
+					strcpy(urls[a], link);
+					a++;
+				}
 			}
 		}
 	}
