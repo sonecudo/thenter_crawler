@@ -10,7 +10,7 @@
 #include <arpa/inet.h>
 #include <netinet/in.h>
 
-#include "funcs.c"
+#include "funcs.h"
 
 struct sockaddr_in remoto;
 
@@ -95,8 +95,8 @@ int torsocks(char *endereco, char *arq_saida){
 	if( (rlen=recv(sockfd, buf, 255, 0))>0 ){
 		printf("[\e[32mINFO\e[0m] Resposta SOCKS5: ");
 		print_data_int(buf, rlen);
+		// relato de erro de conexão
 		if(buf[1]!='\x00'){
-			// relato de erro de conexão
 			if(buf[1]==3){
 				fprintf(stderr, "[\e[31mERRO\e[0m] Rede indiponível!\n");
 			}else if(buf[1]==2){

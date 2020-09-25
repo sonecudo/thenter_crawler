@@ -42,26 +42,29 @@ int onion_chars(char *m, int i, int type){
 char *pega_titulo(char *local_page){
 	FILE *page;
 	int l=0;
-	char linha[200], *titulo;
+	char linha[2000], *titulo;
 	titulo=malloc(sizeof(char)*50);
 	memset(titulo, 0, sizeof(char)*50);
 
 	page=fopen(local_page, "r");
 	if(page==NULL){
-		fprintf(stderr, "[\e[31mERRO\e[0m] Arquivo vazio");
+		fprintf(stderr, "[\e[31mERRO\e[0m] Arquivo vazio\n");
 		exit(1);
 	}else{
-		while(fgets(linha, 200,page) ){
+		while(fgets(linha, 2000,page) ){
 			for(int i=0; linha[i]!='\0'; i++){
 				if( strstr(linha, "<title>")==linha+i-7 || strstr(linha, "<TITLE>")==linha+i-7 ){
 					for(int k=0; (linha[i+k]!='<' || linha[i+k+1]!='/') && k<50; k++){
-						// enquanto estiver antes do </...  title> e
-						if( isalnum(linha[i+k]) || isspace(linha[i+k]) ){
+						// enquanto estiver antes do </
+						if( (isalnum(linha[i+k]) || isspace(linha[i+k])) && linha[i+k]!='\n' ){
 							*(titulo+l)=linha[i+k];
 							l++;
 						}
 					}
 					*(titulo+l)='\0';
+				}else if( strstr(linha, "Location: ")!=NULL ){
+					printf("[\e[32mINFO\e[0m] Header => \e[33m%s\e[0m\n", linha);
+					break;
 				}
 			}
 		}
@@ -124,7 +127,7 @@ int filtrar_urls(FILE *site, char urls[][63]){
 		for(int i=0; linha[i]!='\0' && linha[i+16]!='\0'; i++){
 
 			//onion v2
-			if( strstr(linha, ".onion")==linha+i+16 && onion_chars(linha, i, 2) ){
+			if( strstr(linha, ".onion")==linha+i+16 && onion_chars(linha, i, 2) && strchr(">/. \'\"\n", linha[i-1])!=NULL ){
 				for(k=0; k<22; k++){
 					link[k]=linha[i+k];
 				}
@@ -138,7 +141,7 @@ int filtrar_urls(FILE *site, char urls[][63]){
 			}
 
 			//onion v3
-			else if( strstr(linha, ".onion")==linha+i+56 && onion_chars(linha, i, 3) ){
+			else if( strstr(linha, ".onion")==linha+i+56 && onion_chars(linha, i, 3) && strchr(">/. \'\"\n", linha[i-1])!=NULL ){
 			
 				for(k=0; k<62; k++){
 					link[k]=linha[i+k];

@@ -1,5 +1,5 @@
 /*
- *	Biblioteca para ctor
+ *	Biblioteca para torproxy
  */
 #include <string.h>
 
@@ -56,4 +56,11 @@ int ler_link(char *dominio, char *pag, char *orig){
 		}
 	}
 	return 0;
+}
+void atualiza(FILE *file_stream){
+	long int pos;
+
+	pos=ftell(file_stream);
+	rewind(file_stream);
+	fseek(file_stream, pos, SEEK_SET);
 }
