@@ -42,7 +42,10 @@ int onion_chars(char *m, int i, int type){
 char *pega_titulo(char *local_page){
 	FILE *page;
 	int l=0;
-	char linha[2000], *titulo;
+	char linha[2000], *titulo, *codigo_fonte;
+
+	codigo_fonte=malloc(sizeof(char)*1);
+	memset(codigo_fonte, 0, sizeof(char)*1);
 	titulo=malloc(sizeof(char)*50);
 	memset(titulo, 0, sizeof(char)*50);
 
@@ -51,23 +54,28 @@ char *pega_titulo(char *local_page){
 		fprintf(stderr, "[\e[31mERRO\e[0m] Arquivo vazio\n");
 		exit(1);
 	}else{
-		while(fgets(linha, 2000,page) ){
-			for(int i=0; linha[i]!='\0'; i++){
-				if( strstr(linha, "<title>")==linha+i-7 || strstr(linha, "<TITLE>")==linha+i-7 ){
-					for(int k=0; (linha[i+k]!='<' || linha[i+k+1]!='/') && k<50; k++){
-						// enquanto estiver antes do </
-						if( (isalnum(linha[i+k]) || isspace(linha[i+k])) && linha[i+k]!='\n' ){
-							*(titulo+l)=linha[i+k];
-							l++;
-						}
+		while( fgets(linha, 2000,page) ){
+			codigo_fonte=realloc(codigo_fonte, (size_t) strlen(linha)+strlen(codigo_fonte)+1 );
+			strcat(codigo_fonte, linha);
+		}
+		for(int i=0; i<strlen(codigo_fonte); i++){
+			if( strstr(codigo_fonte, "<title>")==codigo_fonte+i-7 || strstr(codigo_fonte, "<TITLE>")==codigo_fonte+i-7 ){
+				for(int k=0; (codigo_fonte[i+k]!='<' || codigo_fonte[i+k+1]!='/') && k<50; k++){
+					// enquanto estiver antes do </
+					if( (isprint(codigo_fonte[i+k]) || isspace(codigo_fonte[i+k])) && codigo_fonte[i+k]!='\n' ){
+						*(titulo+l)=codigo_fonte[i+k];
+						l++;
 					}
-					*(titulo+l)='\0';
-				}else if( strstr(linha, "Location: ")!=NULL ){
-					printf("[\e[32mINFO\e[0m] Header => \e[33m%s\e[0m\n", linha);
-					break;
 				}
+				*(titulo+l)='\0';
+				break;
+			}else if( strstr(codigo_fonte, "Location: ")!=NULL ){
+				//printf("[\e[32mINFO\e[0m] Header => \e[33m%s\e[0m\n", strstr(codigo_fonte, "Location: "));
+				break;
 			}
 		}
+
+		free(codigo_fonte);
 		fclose(page);
 	}
 
