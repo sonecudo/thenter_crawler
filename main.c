@@ -11,13 +11,23 @@
 #include "torproxy.h"
 #include "crawl.h"
 
+void banner(){
+	printf(	"\n"
+			"  __   _          _   _   _                      _   _  \n"
+			" (_   / \\  |\\ |  |_  /   |_)   /\\   \\    /  |   |_  |_) \n"
+			" __)  \\_/  | \\|  |_  \\_  | \\  /--\\   \\/\\/   |_  |_  | \\ \n"
+			"                                            \e[3;32mtinyurl.com/thenterBr\e[0m\n\n");
+}
+
 int main(int argc, char *argv[]){
 	FILE *lista, *site;
 	char linha_lista[200]="\0", urls[10000][63], linha_ant_lista[200]="\0";
 	unsigned int cont_links, inicio=1;
 	char link[300];
 
-	/* Gestão de argumentos de entrada */
+	banner();
+
+/* Gestão de argumentos de entrada */
 	if(argc == 2){
 		strcpy(link, argv[1]);
 	}else if(argc>2){
@@ -26,23 +36,25 @@ int main(int argc, char *argv[]){
 	}else{
 		strcpy(link, "n5dxszob62pha3q5yz3k5akya4stx5c2ydvwdp5smc7y7foq3ple5zyd.onion/thenter/onion.php");
 	}
-
-	/* Abertura de arquivo */
+//
+/* Abertura de arquivo */
 	lista = fopen("lista.txt", "a+");
 	if (lista==NULL){
 		printf("[\e[31mERRO\e[0m] Erro ao abrir a lista de links.");
 		return -1;
 	}
+//
 
 	/* Salta links da lista, vai para o final do arquivo */
 	while( fgets(linha_lista, 200, lista) );
 
 	/* Laço principal */
 	do{
-		//casos a ignorar linha do arquivo
+	// Casos a ignorar linha do arquivo
 		if( (strcmp(linha_lista, "\0")==0 && !inicio) || strstr(linha_ant_lista, "(off)")!=NULL ){
 			strcpy(linha_ant_lista, linha_lista);
 			continue;
+	//
 
 		//caso de usar link do arquivo ou início
 		}else if

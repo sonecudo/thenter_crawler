@@ -120,7 +120,7 @@ int torsocks(char *endereco, char *arq_saida){
 	//			TERCEIRA TROCA DE MENSAGENS
 	memset(buf, 0, 256);
 	sprintf(buf, "GET %s HTTP/1.1\r\nHost: %s\r\n"
-	"User-Agent: Mozilla/5.0 (Windows NT 10.0; rv:68.0) Gecko/20100101 Firefox/68.0\r\n"
+	"User-Agent: Mozilla/5.0 (Windows NT 10.0; rv:78.0) Gecko/20100101 Firefox/78.0\r\n"
 	"Accept: */*\r\n\r\n", pagina, link);
 
 	free(link);

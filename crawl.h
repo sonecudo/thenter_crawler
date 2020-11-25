@@ -2,7 +2,16 @@
  * Utilitarios para crawler
  */
 #define OCHARS "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ234567"
+#define MAX_TITLE_LENGTH 80
 
+void rm_messy_chars(char *entrada){
+	int i=0;
+	for(int k=0; entrada[k]!='\0'; k++){
+		if(entrada[k]!='\r' && entrada[k]!='\t' && entrada[k]!='\v' && entrada[k]!='\n')
+			entrada[i++]=entrada[k];
+	}
+	entrada[i]='\0';
+}
 int link_na_lista(int indice, char *link, char lista[10000][63]){
 	int flag=0;
 
@@ -41,13 +50,12 @@ int onion_chars(char *m, int i, int type){
 }
 char *pega_titulo(char *local_page){
 	FILE *page;
-	int l=0;
-	char linha[2000], *titulo, *codigo_fonte;
+	char linha[2000], *titulo, *codigo_fonte, *ptitulo;
 
 	codigo_fonte=malloc(sizeof(char)*1);
 	memset(codigo_fonte, 0, sizeof(char)*1);
-	titulo=malloc(sizeof(char)*50);
-	memset(titulo, 0, sizeof(char)*50);
+	titulo=malloc(sizeof(char)*MAX_TITLE_LENGTH);
+	memset(titulo, 0, sizeof(char)*MAX_TITLE_LENGTH);
 
 	page=fopen(local_page, "r");
 	if(page==NULL){
@@ -58,21 +66,27 @@ char *pega_titulo(char *local_page){
 			codigo_fonte=realloc(codigo_fonte, (size_t) strlen(linha)+strlen(codigo_fonte)+1 );
 			strcat(codigo_fonte, linha);
 		}
-		for(int i=0; i<strlen(codigo_fonte); i++){
-			if( strstr(codigo_fonte, "<title>")==codigo_fonte+i-7 || strstr(codigo_fonte, "<TITLE>")==codigo_fonte+i-7 ){
-				for(int k=0; (codigo_fonte[i+k]!='<' || codigo_fonte[i+k+1]!='/') && k<50; k++){
-					// enquanto estiver antes do </
-					if( (isprint(codigo_fonte[i+k]) || isspace(codigo_fonte[i+k])) && codigo_fonte[i+k]!='\n' ){
-						*(titulo+l)=codigo_fonte[i+k];
-						l++;
-					}
-				}
-				*(titulo+l)='\0';
-				break;
-			}else if( strstr(codigo_fonte, "Location: ")!=NULL ){
-				//printf("[\e[32mINFO\e[0m] Header => \e[33m%s\e[0m\n", strstr(codigo_fonte, "Location: "));
-				break;
-			}
+		if( strstr(codigo_fonte, "\nLocation: ")!=NULL || strstr(codigo_fonte, "\nlocation: ")!=NULL || strstr(codigo_fonte, "meta http-equiv=\"refresh\"")!=NULL ){
+			printf("[\e[33mINFO\e[0m] Página está redirecionando!\n");
+		}
+		if( strstr(codigo_fonte, "<title")!=NULL || strstr(codigo_fonte, "<TITLE")!=NULL ){
+			if( strstr(codigo_fonte, "<title")!=NULL)
+				ptitulo=strstr(codigo_fonte, "<title");
+			if( strstr(codigo_fonte, "<TITLE")!=NULL )
+				ptitulo=strstr(codigo_fonte, "<TITLE");
+			ptitulo=strstr(ptitulo, ">")+1;
+
+			if( strstr(ptitulo, "</")!=NULL )
+				strncpy(	titulo,
+							ptitulo,
+							(strstr(ptitulo, "</")-ptitulo)>MAX_TITLE_LENGTH ? MAX_TITLE_LENGTH : (strstr(ptitulo, "</")-ptitulo) //operador ternário
+						);
+			else
+				strncpy(titulo, ptitulo, strlen(ptitulo)>MAX_TITLE_LENGTH ? MAX_TITLE_LENGTH : strlen(ptitulo) );
+
+			titulo[MAX_TITLE_LENGTH-1]='\0';
+			rm_messy_chars(titulo);
+			trim(titulo);
 		}
 
 		free(codigo_fonte);
@@ -82,7 +96,7 @@ char *pega_titulo(char *local_page){
 	if( strlen(titulo)==0 )
 		strcpy(titulo, "sem nome");
 
-	printf("[\e[32mINFO\e[0m] Título: \e[1;32m%s \e[0m\n", titulo);
+	printf("[\e[32mINFO\e[0m] Título: \e[92;40m%s\e[0m\n", titulo);
 	return titulo;
 }
 int registrado(char *link){

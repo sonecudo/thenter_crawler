@@ -3,6 +3,44 @@
  */
 #include <string.h>
 
+void trim(char *entrada){
+	int flag=0, i=0;
+	char c;
+
+	//remove espaços no começo
+	for(int k=0; entrada[k]!='\0'; k++){
+		if(entrada[k]!=' ' || flag){
+			flag=1;
+			entrada[i++]=entrada[k];
+		}
+	}
+	entrada[i]='\0';
+
+	//inverte string
+	for(int k=0; k<strlen(entrada)/2; k++){
+		c=entrada[k];
+		entrada[k]=entrada[strlen(entrada)-k-1];
+		entrada[strlen(entrada)-k-1]=c;
+	}
+
+	//remove espaços no fim
+	i=0;
+	flag=0;
+	for(int k=0; entrada[k]!='\0'; k++){
+		if(entrada[k]!=' ' || flag){
+			flag=1;
+			entrada[i++]=entrada[k];
+		}
+	}
+	entrada[i]='\0';
+
+	//desinverte string
+	for(int k=0; k<strlen(entrada)/2; k++){
+		c=entrada[k];
+		entrada[k]=entrada[strlen(entrada)-k-1];
+		entrada[strlen(entrada)-k-1]=c;
+	}
+}
 void print_data_int(char *entrada, int tam){
 	for(int k=0; k<tam; k++)
 		printf("%d ", entrada[k]);
